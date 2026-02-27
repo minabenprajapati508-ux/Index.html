@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>P.H.G ARTS & SCIENCE COLLEGE</title>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f2f2f2;
+      margin: 0;
+      text-align: center;
+    }
+    h1 {
+      background: #002147;
+      color: white;
+      padding: 20px;
+      margin: 0;
+    }
+    .box {
+      background: white;
+      margin: 20px;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px gray;
+    }
+    input, textarea {
+      width: 80%;
+      padding: 10px;
+      margin: 5px;
+    }
+    button {
+      padding: 8px 15px;
+      background: #002147;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin: 5px;
+    }
+    .subject {
+      background: white;
+      margin: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px gray;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>P.H.G ARTS & SCIENCE COLLEGE</h1>
+
+<div class="box" id="authBox">
+  <h2>Login / Register</h2>
+  <input type="email" id="email" placeholder="Enter Email"><br>
+  <input type="password" id="password" placeholder="Enter Password"><br>
+  <button onclick="register()">Register</button>
+  <button onclick="login()">Login</button>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<div id="subjects"></div>
+
+<script>
+
+  // 🔴 Replace with your Firebase config
+  var firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    databaseURL: "YOUR_DB_URL",
+    projectId: "YOUR_PROJECT_ID",
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  var auth = firebase.auth();
+  var database = firebase.database();
+
+  function register() {
+    var email = document.getElementById("email").value;
+    var pass = document.getElementById("password").value;
+    auth.createUserWithEmailAndPassword(email, pass)
+      .then(() => alert("Registered Successfully"))
+      .catch(err => alert(err.message));
+  }
+
+  function login() {
+    var email = document.getElementById("email").value;
+    var pass = document.getElementById("password").value;
+    auth.signInWithEmailAndPassword(email, pass)
+      .then(() => alert("Login Successful"))
+      .catch(err => alert(err.message));
+  }
+
+  function logout() {
+    auth.signOut();
+    alert("Logged Out");
+  }
+
+  var subjectList = ["Physics", "Chemistry", "Maths", "Biology", "Botany"];
+  var container = document.getElementById("subjects");
+
+  subjectList.forEach(function(subject) {
+    var div = document.createElement("div");
+    div.className = "subject";
+    div.innerHTML = `
+      <h2>${subject}</h2>
+
+      <h4>Syllabus</h4>
+      <textarea id="${subject}-syllabus"></textarea>
+      <button onclick="saveData('${subject}','syllabus')">Upload</button>
+      <div id="${subject}-syllabus-data"></div>
+
+      <h4>Important Questions</h4>
+      <textarea id="${subject}-questions"></textarea>
+      <button onclick="saveData('${subject}','questions')">Upload</button>
+      <div id="${subject}-questions-data"></div>
+
+      <h4>Notes</h4>
+      <textarea id="${subject}-notes"></textarea>
+      <button onclick="saveData('${subject}','notes')">Upload</button>
+      <div id="${subject}-notes-data"></div>
+    `;
+    container.appendChild(div);
+
+    ["syllabus","questions","notes"].forEach(function(type){
+      database.ref(subject + "/" + type).on("value", function(snapshot){
+        document.getElementById(subject + "-" + type + "-data").innerHTML = snapshot.val() || "";
+      });
+    });
+  });
+
+  function saveData(subject,type){
+    var value = document.getElementById(subject + "-" + type).value;
+    database.ref(subject + "/" + type).set(value);
+  }
+
+</script>
+
+</body>
+</html># Index.html
